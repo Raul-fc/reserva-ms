@@ -5,11 +5,13 @@ using Reservas.Application.UseCases.Queries.Asientos.SearchAsientos;
 using Reservas.Infraestructure.EF.Contexts;
 using Reservas.Infraestructure.EF.ReadModel;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Reservas.Infraestructure.EF.UseCases.Queries.Asientos {
+	[ExcludeFromCodeCoverage]
 	public class SearchAsientosHandler :
 		IRequestHandler<SearchAsientosQuery, ICollection<AsientoDto>> {
 

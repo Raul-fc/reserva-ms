@@ -6,12 +6,14 @@ using Reservas.Infraestructure.EF.Contexts;
 using Reservas.Infraestructure.EF.ReadModel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Reservas.Infraestructure.EF.UseCases.Queries.Asientos {
+	[ExcludeFromCodeCoverage]
 	public class SearchAsientosbyIdHandler :
 		IRequestHandler<SearchAsientosByIdQuery, ICollection<AsientoDto>> {
 		private readonly DbSet<ReservaReadModel> _reservas;
