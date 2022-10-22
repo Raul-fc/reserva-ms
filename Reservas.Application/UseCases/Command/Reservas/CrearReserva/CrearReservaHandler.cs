@@ -35,7 +35,7 @@ namespace Reservas.Application.UseCases.Command.Reservas.CrearReserva {
 
 			if (nroAsientosDisponibles < request.Detalle.Count)
 			{
-				throw new BussinessRuleValidationException($"Solo existen: {nroAsientosDisponibles} asientos disponibles");
+				throw new BussinessRuleValidationException($"Solo existen {nroAsientosDisponibles} asientos disponibles");
 			}
 			Reserva objReserva = _reservaFactory.Create(request.IdVuelo, nroReserva, request.FechaVuelo);
 
