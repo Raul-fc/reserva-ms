@@ -59,6 +59,7 @@ jobs:
             .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
         
     build-and-deploy:
+        needs: build
         runs-on: ubuntu-latest
         steps:
         - uses: actions/checkout@v3
