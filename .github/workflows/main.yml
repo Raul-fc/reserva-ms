@@ -1,10 +1,14 @@
-name: Build, Test, Analyze
-
+name: .NET Core
+env:
+  AZURE_WEBAPP_NAME: service-reserva
+  AZURE_WEBAPP_PACKAGE_PATH: '.' 
+  DOTNET_VERSION: '5' 
 on:
+
+  push:
+    branches: [ "main" ]
   pull_request:
-    types: [opened, reopened]
-    branches:    
-      - 'dev'
+    branches: [ "main" ]
 jobs:
     build:
       name: Build
@@ -53,4 +57,49 @@ jobs:
             dotnet test --no-build --verbosity normal
             dotnet-coverage collect 'dotnet test Reservas.Test' -f xml  -o 'coverage.xml'
             .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+        
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v3
+        - name: Setup .NET
+          uses: actions/setup-dotnet@v2        
+          with:
+            dotnet-version: 5.0.x
+        - name: Restore dependencies
+          run: dotnet restore
+
+        # checkout the repo
+        - name: 'Checkout GitHub Action'
+          uses: actions/checkout@main
+
+        - name: 'Login via Azure CLI'
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
             
+        - name: 'Build and push image'
+          uses: azure/docker-login@v1
+          with:
+            login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+            username: ${{ secrets.REGISTRY_USERNAME }}
+            password: ${{ secrets.REGISTRY_PASSWORD }}
+        - run: |
+            docker build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/reserva:latest
+            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/reserva:latest
+        - name: 'Push container image to ACR'
+          uses: azure/docker-login@v1
+          with:
+            login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+            username: ${{ secrets.REGISTRY_USERNAME }}
+            password: ${{ secrets.REGISTRY_PASSWORD }}
+        - run: docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/reserva:latest
+        
+        - name: Deploy to Azure Web App
+          id: deploy-to-webapp
+          uses: azure/webapps-deploy@0b651ed7546ecfc75024011f76944cb9b381ef1e
+          with:
+            app-name: ${{ env.AZURE_WEBAPP_NAME }}
+            publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+            package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
